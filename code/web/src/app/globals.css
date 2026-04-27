@@ -1,26 +1,314 @@
 @import "tailwindcss";
 
+/* ========================================
+   Design Tokens
+   ======================================== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    /* ========================================
+       PALETTE CONFIGURATION
+       Modify these base colors to instantly re-theme the entire application.
+       ======================================== */
+    --palette-bg: #FFFFFF;           /* WHITE */
+    --palette-text: #2A2A2A;         /* JET (black) */
+    --palette-correct: #91C896;      /* CELADON (green) */
+    --palette-error: #EF797A;        /* LIGHT CORAL (red) */
+    --palette-accent: #90D1DC;       /* NON PHOTO BLUE */
+    --palette-highlight: #FFD405;    /* GOLD (yellow) */
+
+    /* --- THEME TOKENS (Derived from palette) --- */
+    --background: var(--palette-bg);
+    --background-secondary: var(--palette-bg);
+    --foreground: var(--palette-text);
+    --foreground-muted: #7A7A7A;
+
+    --color-correct: var(--palette-correct);
+    --color-error: var(--palette-error);
+    --color-pending: #C4C4C4;
+    --color-foreground: var(--palette-text);
+
+    /* Note: if you change the accent color, update these rgb values */
+    --color-active-bg: rgba(144, 209, 220, 0.15); 
+    --color-active-border: var(--palette-highlight);
+
+    --color-accent: var(--palette-accent);
+    --color-accent-glow: rgba(144, 209, 220, 0.2);
+
+    /* Gradients */
+    --gradient-title: linear-gradient(135deg, var(--palette-accent) 0%, var(--palette-correct) 100%);
+    --gradient-complete: linear-gradient(135deg, var(--palette-correct) 0%, var(--palette-highlight) 100%);
+
+    --font-sans: var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+    --font-chinese: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "WenQuanYi Micro Hei", sans-serif;
+
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ========================================
+   Base Styles
+   ======================================== */
+* {
+    box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle background pattern */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%,
+    var(--color-active-bg) 0%,
+    transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%,
+            var(--color-accent-glow) 0%,
+            transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ========================================
+   Typing Practice Container
+   ======================================== */
+.typing-practice {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 3rem 1.5rem;
+    cursor: text;
+}
+
+.typing-practice__header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.typing-practice__title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+    background: var(--gradient-title);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.typing-practice__subtitle {
+    font-size: 1rem;
+    color: var(--foreground-muted);
+    margin: 0;
+    letter-spacing: 0.01em;
+}
+
+.typing-practice__content {
+    width: 100%;
+    max-width: 720px;
+    position: relative;
+}
+
+/* ========================================
+   Hidden Input
+   ======================================== */
+.typing-practice__hidden-input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
+    top: 0;
+    left: 0;
+}
+
+/* ========================================
+   Text Display
+   ======================================== */
+.text-display {
+    background: var(--background-secondary);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem 2rem;
+    line-height: 4;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* ========================================
+   Word Groups
+   ======================================== */
+.word-group {
+    display: inline-flex;
+    align-items: flex-end;
+    margin-right: 1.5rem;
+    padding: 0.35rem 0.5rem;
+    border-radius: var(--radius-sm);
+    position: relative;
+    transition: background var(--transition-normal),
+    box-shadow var(--transition-normal);
+}
+
+.word-group--active {
+    background: var(--color-active-bg);
+    box-shadow: 0 0 0 1px var(--color-active-border),
+    0 0 20px var(--color-accent-glow);
+}
+
+.word-group--completed {
+    opacity: 0.6;
+    transition: opacity var(--transition-slow);
+}
+
+/* ========================================
+   Segments (Ruby)
+   ======================================== */
+.segment {
+    font-family: var(--font-chinese);
+    font-size: 2rem;
+    line-height: 1;
+    transition: color var(--transition-fast);
+    ruby-align: center;
+}
+
+.segment rt {
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    transition: color var(--transition-fast);
+    ruby-align: center;
+}
+
+/* ========================================
+   Typed Pinyin (below active word)
+   ======================================== */
+.typed-pinyin-anchor {
+    position: absolute;
+    bottom: -2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.typed-pinyin {
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-accent);
+    background: transparent;
+    padding: 0.15rem 0.6rem;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    letter-spacing: 0.04em;
+    border: 1px solid transparent;
+}
+
+/* ========================================
+   Completion State
+   ======================================== */
+.typing-practice__complete {
+    text-align: center;
+    margin-top: 3rem;
+    animation: fadeInUp 0.6s var(--transition-normal) both;
+}
+
+.typing-practice__complete-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    animation: celebrateBounce 0.8s ease-out;
+}
+
+.typing-practice__complete-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    background: var(--gradient-complete);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.typing-practice__complete-stats {
+    font-size: 1.1rem;
+    color: var(--foreground-muted);
+    margin: 0;
+}
+
+/* ========================================
+   Animations
+   ======================================== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes celebrateBounce {
+    0% {
+        transform: scale(0);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    70% {
+        transform: scale(0.95);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* ========================================
+   Responsive
+   ======================================== */
+@media (max-width: 640px) {
+    .typing-practice {
+        padding: 2rem 1rem;
+    }
+
+    .typing-practice__title {
+        font-size: 1.75rem;
+    }
+
+    .text-display {
+        padding: 1.5rem 1.25rem;
+        line-height: 3.5;
+    }
+
+    .segment {
+        font-size: 1.5rem;
+    }
+
+    .word-group {
+        margin-right: 1rem;
+    }
 }

@@ -1,5 +1,14 @@
 # Tasks: Chinese Typing Practice
 
+- [x] Task 1: Data model and hardcoded passage
+- [x] Task 2: TextDisplay component with ruby rendering
+- [x] Task 3: TypingPractice container with state management and typed pinyin display
+- [x] Task 4: Real-time segment coloring
+- [x] Task 5: Active word highlight and transition polish
+- [x] Task 6: Page integration, end-of-passage, and polish
+
+---
+
 ## Task 1: Data model and hardcoded passage
 
 **Files**: `src/app/types.ts`, `src/app/data/passages.ts`
@@ -91,7 +100,7 @@ Replace the default Next.js page with the `TypingPractice` component. Handle end
 
 - End-of-passage: when all words are completed, disable hidden input, show "Practice complete" message
 - Dark theme with premium aesthetics
-- Typography (Google Font — Inter or similar for UI, appropriate sizing for Chinese characters)
+- Typography (system fonts for UI, appropriate sizing for Chinese characters)
 - Centered layout with comfortable reading width
 - Responsive design basics
 - Page title and minimal header/instructions
