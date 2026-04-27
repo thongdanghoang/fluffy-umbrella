@@ -1,0 +1,37 @@
+### macOS ###
+.DS_Store
+.AppleDouble
+.LSOverride
+# Files that might be created by Finder or other Mac-specific processes
+Icon
+._*
+
+### JetBrains (IntelliJ IDEA) ###
+# Default ignored files
+.idea/shelf/
+.idea/workspace.xml
+# Editor-based HTTP Client requests
+.idea/httpRequests/
+# Ignored default folder with query files
+.idea/queries/
+# Datasource local storage ignored files
+.idea/dataSources/
+.idea/dataSources.local.xml
+# Others
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/dictionary.xml
+.idea/gradle.xml
+.idea/modules.xml
+.idea/misc.xml
+.idea/vcs.xml
+# Sensitive or high-churn files
+.idea/dataSources.xml
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+# Project files
+*.iml
+*.iws
+*.ipr
+out/
