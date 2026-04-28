@@ -40,12 +40,18 @@
        PALETTE CONFIGURATION
        Modify these base colors to instantly re-theme the entire application.
        ======================================== */
-    --palette-bg: #FFFFFF; /* WHITE */
-    --palette-text: #2A2A2A; /* JET (black) */
-    --palette-correct: #91C896; /* CELADON (green) */
-    --palette-error: #EF797A; /* LIGHT CORAL (red) */
-    --palette-accent: #90D1DC; /* NON PHOTO BLUE */
-    --palette-highlight: #FFD405; /* GOLD (yellow) */
+    --palette-bg: #FFFFFF;
+    /* WHITE */
+    --palette-text: #2A2A2A;
+    /* JET (black) */
+    --palette-correct: #91C896;
+    /* CELADON (green) */
+    --palette-error: #EF797A;
+    /* LIGHT CORAL (red) */
+    --palette-accent: #90D1DC;
+    /* NON PHOTO BLUE */
+    --palette-highlight: #FFD405;
+    /* GOLD (yellow) */
 
     /* --- THEME TOKENS (Derived from palette) --- */
     --background: var(--palette-bg);
@@ -182,6 +188,11 @@ body::before {
     padding: 2.5rem 2rem;
     line-height: 4;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+    min-height: 320px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    row-gap: 1rem;
 }
 
 /* ========================================
