@@ -1,149 +1,181 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Passage, WordResult } from "../types";
+import {useCallback, useEffect, useRef, useState} from "react";
+import {Passage, WordResult} from "../types";
 import TextDisplay from "./TextDisplay";
 
 interface TypingPracticeProps {
-  passage: Passage;
+    passage: Passage;
 }
 
-export default function TypingPractice({ passage }: TypingPracticeProps) {
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [currentInput, setCurrentInput] = useState("");
-  const [completedWords, setCompletedWords] = useState<WordResult[]>([]);
-  const inputRef = useRef<HTMLInputElement>(null);
+export default function TypingPractice({passage}: TypingPracticeProps) {
+    const [currentWordIndex, setCurrentWordIndex] = useState(0);
+    const [currentInput, setCurrentInput] = useState("");
+    const [completedWords, setCompletedWords] = useState<WordResult[]>([]);
+    const [isFocused, setIsFocused] = useState(true);
+    const inputRef = useRef<HTMLInputElement>(null);
 
-  const isComplete = currentWordIndex >= passage.length;
+    const isComplete = currentWordIndex >= passage.length;
 
-  // Auto-focus on mount
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+    // Handle window blur/focus for tab switching
+    useEffect(() => {
+        const handleWindowBlur = () => setIsFocused(false);
+        const handleWindowFocus = () => {
+            if (document.activeElement === inputRef.current) {
+                setIsFocused(true);
+            }
+        };
 
-  // Refocus input when clicking the practice area
-  const handleContainerClick = useCallback(() => {
-    if (!isComplete) {
-      inputRef.current?.focus();
-    }
-  }, [isComplete]);
+        window.addEventListener("blur", handleWindowBlur);
+        window.addEventListener("focus", handleWindowFocus);
 
-  // Handle input changes
-  const handleInput = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (isComplete) return;
+        return () => {
+            window.removeEventListener("blur", handleWindowBlur);
+            window.removeEventListener("focus", handleWindowFocus);
+        };
+    }, []);
 
-      const value = e.target.value;
+    // Auto-focus on mount
+    useEffect(() => {
+        inputRef.current?.focus();
+    }, []);
 
-      // Check if space was typed (submit word)
-      if (value.endsWith(" ")) {
-        const trimmed = value.trimEnd();
-        const currentWord = passage[currentWordIndex];
-        const expected = currentWord.segments
-          .map((s) => s.pinyin)
-          .join("");
-        const correct = trimmed === expected;
-
-        setCompletedWords((prev) => [
-          ...prev,
-          { wordIndex: currentWordIndex, correct },
-        ]);
-        setCurrentWordIndex((prev) => prev + 1);
-        setCurrentInput("");
-
-        // Clear the input field
-        if (inputRef.current) {
-          inputRef.current.value = "";
+    // Refocus input when clicking the practice area
+    const handleContainerClick = useCallback(() => {
+        if (!isComplete) {
+            inputRef.current?.focus();
         }
-        return;
-      }
+    }, [isComplete]);
 
-      // Filter to only allow Latin letters (no IME, no special chars)
-      const filtered = value.replace(/[^a-zA-Z]/g, "").toLowerCase();
-      setCurrentInput(filtered);
+    // Handle input changes
+    const handleInput = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            if (isComplete) return;
 
-      // Sync the input element with filtered value
-      if (inputRef.current && inputRef.current.value !== filtered) {
-        inputRef.current.value = filtered;
-      }
-    },
-    [isComplete, passage, currentWordIndex]
-  );
+            const value = e.target.value;
 
-  // Handle keydown for special keys
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (isComplete) return;
+            // Check if space was typed (submit word)
+            if (value.endsWith(" ")) {
+                const trimmed = value.trimEnd();
+                const currentWord = passage[currentWordIndex];
+                const expected = currentWord.segments
+                    .map((s) => s.pinyin)
+                    .join("");
+                const correct = trimmed === expected;
 
-      if (e.key === " ") {
-        e.preventDefault();
-        const currentWord = passage[currentWordIndex];
-        const expected = currentWord.segments
-          .map((s) => s.pinyin)
-          .join("");
-        const correct = currentInput === expected;
+                setCompletedWords((prev) => [
+                    ...prev,
+                    {wordIndex: currentWordIndex, correct},
+                ]);
+                setCurrentWordIndex((prev) => prev + 1);
+                setCurrentInput("");
 
-        setCompletedWords((prev) => [
-          ...prev,
-          { wordIndex: currentWordIndex, correct },
-        ]);
-        setCurrentWordIndex((prev) => prev + 1);
-        setCurrentInput("");
+                // Clear the input field
+                if (inputRef.current) {
+                    inputRef.current.value = "";
+                }
+                return;
+            }
 
-        if (inputRef.current) {
-          inputRef.current.value = "";
-        }
-      }
-    },
-    [isComplete, passage, currentWordIndex, currentInput]
-  );
+            // Filter to only allow Latin letters (no IME, no special chars)
+            const filtered = value.replace(/[^a-zA-Z]/g, "").toLowerCase();
+            setCurrentInput(filtered);
 
-  return (
-    <div className="typing-practice" onClick={handleContainerClick}>
-      <div className="typing-practice__header">
-        <h1 className="typing-practice__title">中文打字练习</h1>
-        <p className="typing-practice__subtitle">
-          Type the pinyin for each word and press space to advance
-        </p>
-      </div>
+            // Sync the input element with filtered value
+            if (inputRef.current && inputRef.current.value !== filtered) {
+                inputRef.current.value = filtered;
+            }
+        },
+        [isComplete, passage, currentWordIndex]
+    );
 
-      <div className="typing-practice__content">
-        <TextDisplay
-          passage={passage}
-          currentWordIndex={currentWordIndex}
-          currentInput={currentInput}
-          completedWords={completedWords}
-        />
+    // Handle keydown for special keys
+    const handleKeyDown = useCallback(
+        (e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (isComplete) return;
 
-        {/* Hidden input for keystroke capture */}
-        <input
-          ref={inputRef}
-          type="text"
-          className="typing-practice__hidden-input"
-          autoFocus
-          disabled={isComplete}
-          onChange={handleInput}
-          onKeyDown={handleKeyDown}
-          autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="off"
-          spellCheck={false}
-          aria-label="Type pinyin here"
-        />
-      </div>
+            if (e.key === " ") {
+                e.preventDefault();
+                const currentWord = passage[currentWordIndex];
+                const expected = currentWord.segments
+                    .map((s) => s.pinyin)
+                    .join("");
+                const correct = currentInput === expected;
 
-      {isComplete && (
-        <div className="typing-practice__complete">
-          <div className="typing-practice__complete-icon">🎉</div>
-          <h2 className="typing-practice__complete-title">
-            Practice Complete!
-          </h2>
-          <p className="typing-practice__complete-stats">
-            {completedWords.filter((w) => w.correct).length} /{" "}
-            {completedWords.length} words correct
-          </p>
+                setCompletedWords((prev) => [
+                    ...prev,
+                    {wordIndex: currentWordIndex, correct},
+                ]);
+                setCurrentWordIndex((prev) => prev + 1);
+                setCurrentInput("");
+
+                if (inputRef.current) {
+                    inputRef.current.value = "";
+                }
+            }
+        },
+        [isComplete, passage, currentWordIndex, currentInput]
+    );
+
+    return (
+        <div className="typing-practice">
+            <div className="typing-practice__header">
+                <h1 className="typing-practice__title">中文打字练习</h1>
+                <p className="typing-practice__subtitle">
+                    Type the pinyin for each word and press space to advance
+                </p>
+            </div>
+
+            <div className="typing-practice__content" onClick={handleContainerClick}>
+                <div
+                    className={`typing-practice__text-wrapper ${!isFocused && !isComplete ? "typing-practice__text-wrapper--blurred" : ""}`}>
+                    <TextDisplay
+                        passage={passage}
+                        currentWordIndex={currentWordIndex}
+                        currentInput={currentInput}
+                        completedWords={completedWords}
+                    />
+                </div>
+
+                {!isFocused && !isComplete && (
+                    <div className="typing-practice__focus-overlay">
+            <span className="typing-practice__focus-text">
+              Click here to continue (or press TAB)
+            </span>
+                    </div>
+                )}
+
+                {/* Hidden input for keystroke capture */}
+                <input
+                    ref={inputRef}
+                    type="text"
+                    className="typing-practice__hidden-input"
+                    autoFocus
+                    disabled={isComplete}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    onChange={handleInput}
+                    onKeyDown={handleKeyDown}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                    aria-label="Type pinyin here"
+                />
+            </div>
+
+            {isComplete && (
+                <div className="typing-practice__complete">
+                    <div className="typing-practice__complete-icon">🎉</div>
+                    <h2 className="typing-practice__complete-title">
+                        Practice Complete!
+                    </h2>
+                    <p className="typing-practice__complete-stats">
+                        {completedWords.filter((w) => w.correct).length} /{" "}
+                        {completedWords.length} words correct
+                    </p>
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 }

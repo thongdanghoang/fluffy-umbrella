@@ -179,8 +179,36 @@ body::before {
 }
 
 /* ========================================
-   Text Display
+   Text Display & Focus Blur
    ======================================== */
+.typing-practice__text-wrapper {
+    transition: filter var(--transition-normal), opacity var(--transition-normal);
+}
+
+.typing-practice__text-wrapper--blurred {
+    filter: blur(5px);
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.typing-practice__focus-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    pointer-events: none;
+    /* Clicking the container already handles focus */
+    animation: fadeIn 0.3s ease-out;
+}
+
+.typing-practice__focus-text {
+    color: var(--foreground);
+    font-weight: 400;
+    font-size: 1rem;
+}
+
 .text-display {
     background: var(--background-secondary);
     border: 1px solid rgba(0, 0, 0, 0.06);
@@ -300,6 +328,16 @@ body::before {
 /* ========================================
    Animations
    ======================================== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
 @keyframes fadeInUp {
     from {
         opacity: 0;
