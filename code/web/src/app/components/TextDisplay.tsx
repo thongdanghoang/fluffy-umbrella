@@ -11,6 +11,7 @@ interface TextDisplayProps {
     currentWordIndex: number;
     currentInput: string;
     completedWords: WordResult[];
+    showPinyin: boolean;
 }
 
 const SEGMENT_COLOR_MAP: Record<SegmentColor, string> = {
@@ -25,6 +26,7 @@ export default function TextDisplay({
                                         currentWordIndex,
                                         currentInput,
                                         completedWords,
+                                        showPinyin,
                                     }: TextDisplayProps) {
     const WORDS_PER_PAGE = 20;
     const currentPage = Math.floor(currentWordIndex / WORDS_PER_PAGE);
@@ -78,7 +80,7 @@ export default function TextDisplay({
                             color: SEGMENT_COLOR_MAP['neutral'],
                         }}
                     >
-                        {segment.display}
+                        {showPinyin ? segment.display : ""}
                     </rt>
                 </ruby>
             ))}

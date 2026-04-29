@@ -13,6 +13,7 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
     const [currentInput, setCurrentInput] = useState("");
     const [completedWords, setCompletedWords] = useState<WordResult[]>([]);
     const [isFocused, setIsFocused] = useState(true);
+    const [showPinyin, setShowPinyin] = useState(true);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const isComplete = currentWordIndex >= passage.length;
@@ -126,6 +127,30 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
                 </p>
             </div>
 
+            {/* Actions toolbar */}
+            <div className="typing-practice__actions">
+                <button
+                    id="toggle-pinyin-btn"
+                    className={`typing-practice__action-btn${showPinyin ? " typing-practice__action-btn--active" : ""}`}
+                    onClick={() => setShowPinyin((prev) => !prev)}
+                    aria-label={showPinyin ? "Hide Pinyin" : "Show Pinyin"}
+                    title={showPinyin ? "Hide Pinyin" : "Show Pinyin"}
+                    type="button"
+                >
+                    {/* Pinyin / ruby annotation icon */}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none"
+                         stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                         aria-hidden="true">
+                        <path d="M4 7h16"/>
+                        <path d="M4 12h10"/>
+                        <path d="M4 17h7"/>
+                        <rect x="15" y="11" width="6" height="8" rx="1"/>
+                        <path d="M17 11V9a1 1 0 0 1 2 0v2"/>
+                    </svg>
+                </button>
+            </div>
+            <div className="typing-practice__divider"/>
+
             <div className="typing-practice__content" onClick={handleContainerClick}>
                 <div
                     className={`typing-practice__text-wrapper ${!isFocused && !isComplete ? "typing-practice__text-wrapper--blurred" : ""}`}>
@@ -134,6 +159,7 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
                         currentWordIndex={currentWordIndex}
                         currentInput={currentInput}
                         completedWords={completedWords}
+                        showPinyin={showPinyin}
                     />
                 </div>
 

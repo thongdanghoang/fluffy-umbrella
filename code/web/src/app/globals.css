@@ -166,6 +166,65 @@ body::before {
 }
 
 /* ========================================
+   Actions Toolbar
+   ======================================== */
+.typing-practice__actions {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 0 0.5rem;
+}
+
+.typing-practice__divider {
+    width: 100%;
+    max-width: 720px;
+    height: 1px;
+    background: linear-gradient(
+            to right,
+            transparent,
+            rgba(144, 209, 220, 0.35) 20%,
+            rgba(144, 209, 220, 0.35) 80%,
+            transparent
+    );
+    margin-bottom: 0.75rem;
+}
+
+.typing-practice__action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--foreground-muted);
+    cursor: pointer;
+    transition: color var(--transition-fast),
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.typing-practice__action-btn:hover {
+    color: var(--color-accent);
+    border-color: rgba(144, 209, 220, 0.4);
+    background: var(--color-active-bg);
+}
+
+.typing-practice__action-btn--active {
+    color: var(--color-accent);
+    border-color: rgba(144, 209, 220, 0.5);
+    background: var(--color-active-bg);
+    box-shadow: 0 0 8px var(--color-accent-glow);
+}
+
+.typing-practice__action-btn--active:hover {
+    box-shadow: 0 0 14px var(--color-accent-glow);
+}
+
+/* ========================================
    Hidden Input
    ======================================== */
 .typing-practice__hidden-input {
