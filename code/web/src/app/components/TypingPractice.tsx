@@ -1,15 +1,23 @@
 "use client";
 
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {Passage, WordResult} from "../types";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Passage, WordResult } from "../types";
 import TextDisplay from "./TextDisplay";
 
 interface TypingPracticeProps {
     passage: Passage;
 }
 
-export default function TypingPractice({passage}: TypingPracticeProps) {
+const FONT_OPTIONS = [
+    { id: "F1", name: "lxgw-wenkai-tc-regular", family: '"LXGW WenKai TC", cursive' },
+    { id: "F2", name: "noto-sans-sc", family: '"Noto Sans SC", sans-serif' },
+    { id: "F3", name: "zhi-mang-xing-regular", family: '"Zhi Mang Xing", cursive' },
+    { id: "F4", name: "ma-shan-zheng-regular", family: '"Ma Shan Zheng", cursive' },
+];
+
+export default function TypingPractice({ passage }: TypingPracticeProps) {
     const [currentWordIndex, setCurrentWordIndex] = useState(0);
+    const [currentFont, setCurrentFont] = useState(FONT_OPTIONS[0]);
     const [currentInput, setCurrentInput] = useState("");
     const [completedWords, setCompletedWords] = useState<WordResult[]>([]);
     const [isFocused, setIsFocused] = useState(true);
@@ -37,7 +45,7 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
     // Stable random permutation of word indices — recomputed only when the
     // active passage changes, NOT on every slider tick.
     const pinyinHiddenOrder = useMemo(() => {
-        const indices = Array.from({length: activePassage.length}, (_, i) => i);
+        const indices = Array.from({ length: activePassage.length }, (_, i) => i);
         for (let i = indices.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [indices[i], indices[j]] = [indices[j], indices[i]];
@@ -124,7 +132,7 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
 
                 setCompletedWords((prev) => [
                     ...prev,
-                    {wordIndex: currentWordIndex, correct},
+                    { wordIndex: currentWordIndex, correct },
                 ]);
                 setCurrentWordIndex((prev) => prev + 1);
                 setCurrentInput("");
@@ -163,7 +171,7 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
 
                 setCompletedWords((prev) => [
                     ...prev,
-                    {wordIndex: currentWordIndex, correct},
+                    { wordIndex: currentWordIndex, correct },
                 ]);
                 setCurrentWordIndex((prev) => prev + 1);
                 setCurrentInput("");
@@ -177,7 +185,7 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
     );
 
     return (
-        <div className="typing-practice">
+        <div className="typing-practice" style={{ "--font-chinese": currentFont.family } as React.CSSProperties}>
             <div className="typing-practice__header">
                 <h1 className="typing-practice__title">中文打字练习</h1>
                 <p className="typing-practice__subtitle">
@@ -187,6 +195,22 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
 
             {/* Actions toolbar */}
             <div className="typing-practice__actions">
+                {/* Font selection group */}
+                <div className="typing-practice__btn-group">
+                    {FONT_OPTIONS.map((font) => (
+                        <button
+                            key={font.id}
+                            className={`typing-practice__action-btn${currentFont.id === font.id ? " typing-practice__action-btn--active" : ""}`}
+                            onClick={() => setCurrentFont(font)}
+                            aria-label={`Select font ${font.name}`}
+                            title={font.name}
+                            type="button"
+                        >
+                            {font.id}
+                        </button>
+                    ))}
+                </div>
+
                 {/* Shuffle toggle */}
                 <button
                     id="toggle-shuffle-btn"
@@ -203,12 +227,12 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
                 >
                     {/* Shuffle icon */}
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none"
-                         stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                         aria-hidden="true">
-                        <polyline points="16 3 21 3 21 8"/>
-                        <line x1="4" y1="20" x2="21" y2="3"/>
-                        <polyline points="21 16 21 21 16 21"/>
-                        <line x1="15" y1="15" x2="21" y2="21"/>
+                        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                        aria-hidden="true">
+                        <polyline points="16 3 21 3 21 8" />
+                        <line x1="4" y1="20" x2="21" y2="3" />
+                        <polyline points="21 16 21 21 16 21" />
+                        <line x1="15" y1="15" x2="21" y2="21" />
                     </svg>
                 </button>
 
@@ -224,13 +248,13 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
                     >
                         {/* Pinyin / ruby annotation icon */}
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none"
-                             stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                             aria-hidden="true">
-                            <path d="M4 7h16"/>
-                            <path d="M4 12h10"/>
-                            <path d="M4 17h7"/>
-                            <rect x="15" y="11" width="6" height="8" rx="1"/>
-                            <path d="M17 11V9a1 1 0 0 1 2 0v2"/>
+                            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                            aria-hidden="true">
+                            <path d="M4 7h16" />
+                            <path d="M4 12h10" />
+                            <path d="M4 17h7" />
+                            <rect x="15" y="11" width="6" height="8" rx="1" />
+                            <path d="M17 11V9a1 1 0 0 1 2 0v2" />
                         </svg>
                     </button>
 
@@ -246,11 +270,11 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
                         aria-label={`Hide ${pinyinHideRatio}% of pinyin`}
                         title={`Hide ${pinyinHideRatio}% of pinyin`}
                         className="typing-practice__ratio-slider"
-                        style={{"--ratio": pinyinHideRatio} as React.CSSProperties}
+                        style={{ "--ratio": pinyinHideRatio } as React.CSSProperties}
                     />
                 </div>
             </div>
-            <div className="typing-practice__divider"/>
+            <div className="typing-practice__divider" />
 
             <div className="typing-practice__content" onClick={handleContainerClick}>
                 <div
