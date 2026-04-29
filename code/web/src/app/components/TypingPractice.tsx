@@ -41,6 +41,19 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
         inputRef.current?.focus();
     }, []);
 
+    // Alt/Option+P — toggle pinyin (uses e.code so Option+P on macOS works
+    // even though the key value is "π" rather than "p")
+    useEffect(() => {
+        const handleShortcut = (e: KeyboardEvent) => {
+            if (e.altKey && e.code === "KeyP") {
+                e.preventDefault();
+                setShowPinyin((prev) => !prev);
+            }
+        };
+        window.addEventListener("keydown", handleShortcut);
+        return () => window.removeEventListener("keydown", handleShortcut);
+    }, []);
+
     // Refocus input when clicking the practice area
     const handleContainerClick = useCallback(() => {
         if (!isComplete) {
@@ -133,8 +146,8 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
                     id="toggle-pinyin-btn"
                     className={`typing-practice__action-btn${showPinyin ? " typing-practice__action-btn--active" : ""}`}
                     onClick={() => setShowPinyin((prev) => !prev)}
-                    aria-label={showPinyin ? "Hide Pinyin" : "Show Pinyin"}
-                    title={showPinyin ? "Hide Pinyin" : "Show Pinyin"}
+                    aria-label={showPinyin ? "Hide Pinyin (Alt+P)" : "Show Pinyin (Alt+P)"}
+                    title={showPinyin ? "Hide Pinyin (Alt+P)" : "Show Pinyin (Alt+P)"}
                     type="button"
                 >
                     {/* Pinyin / ruby annotation icon */}
@@ -165,9 +178,9 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
 
                 {!isFocused && !isComplete && (
                     <div className="typing-practice__focus-overlay">
-            <span className="typing-practice__focus-text">
-              Click here to continue (or press TAB)
-            </span>
+                        <span className="typing-practice__focus-text">
+                            Click here to continue (or press TAB)
+                        </span>
                     </div>
                 )}
 
