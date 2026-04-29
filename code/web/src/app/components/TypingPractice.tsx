@@ -14,6 +14,7 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
     const [completedWords, setCompletedWords] = useState<WordResult[]>([]);
     const [isFocused, setIsFocused] = useState(true);
     const [showPinyin, setShowPinyin] = useState(true);
+    const [pinyinHideRatio, setPinyinHideRatio] = useState(100);
     const [isShuffled, setIsShuffled] = useState(false);
     // Bumped each time shuffle is toggled on, to get a fresh random order
     const [shuffleSeed, setShuffleSeed] = useState(0);
@@ -32,6 +33,25 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
         }
         return arr;
     }, [passage, isShuffled, shuffleSeed]);
+
+    // Stable random permutation of word indices — recomputed only when the
+    // active passage changes, NOT on every slider tick.
+    const pinyinHiddenOrder = useMemo(() => {
+        const indices = Array.from({length: activePassage.length}, (_, i) => i);
+        for (let i = indices.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [indices[i], indices[j]] = [indices[j], indices[i]];
+        }
+        return indices;
+    }, [activePassage]);
+
+    // Set of word indices whose pinyin is hidden. Moving the slider just
+    // changes how far into the pre-shuffled order we go — no re-randomisation.
+    const hiddenPinyinIndices = useMemo(() => {
+        if (showPinyin) return new Set<number>();
+        const hideCount = Math.round(activePassage.length * pinyinHideRatio / 100);
+        return new Set<number>(pinyinHiddenOrder.slice(0, hideCount));
+    }, [showPinyin, pinyinHiddenOrder, pinyinHideRatio, activePassage.length]);
 
     // Reset progress whenever the active passage changes
     useEffect(() => {
@@ -192,26 +212,43 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
                     </svg>
                 </button>
 
-                {/* Pinyin visibility toggle */}
-                <button
-                    id="toggle-pinyin-btn"
-                    className={`typing-practice__action-btn${showPinyin ? " typing-practice__action-btn--active" : ""}`}
-                    onClick={() => setShowPinyin((prev) => !prev)}
-                    aria-label={showPinyin ? "Hide Pinyin (Alt+P)" : "Show Pinyin (Alt+P)"}
-                    title={showPinyin ? "Hide Pinyin (Alt+P)" : "Show Pinyin (Alt+P)"}
-                    type="button"
-                >
-                    {/* Pinyin / ruby annotation icon */}
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none"
-                         stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                         aria-hidden="true">
-                        <path d="M4 7h16"/>
-                        <path d="M4 12h10"/>
-                        <path d="M4 17h7"/>
-                        <rect x="15" y="11" width="6" height="8" rx="1"/>
-                        <path d="M17 11V9a1 1 0 0 1 2 0v2"/>
-                    </svg>
-                </button>
+                {/* Pinyin visibility toggle + ratio slider */}
+                <div className="typing-practice__pinyin-control">
+                    <button
+                        id="toggle-pinyin-btn"
+                        className={`typing-practice__action-btn${showPinyin ? " typing-practice__action-btn--active" : ""}`}
+                        onClick={() => setShowPinyin((prev) => !prev)}
+                        aria-label={showPinyin ? "Hide Pinyin (Alt+P)" : "Show Pinyin (Alt+P)"}
+                        title={showPinyin ? "Hide Pinyin (Alt+P)" : "Show Pinyin (Alt+P)"}
+                        type="button"
+                    >
+                        {/* Pinyin / ruby annotation icon */}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none"
+                             stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                             aria-hidden="true">
+                            <path d="M4 7h16"/>
+                            <path d="M4 12h10"/>
+                            <path d="M4 17h7"/>
+                            <rect x="15" y="11" width="6" height="8" rx="1"/>
+                            <path d="M17 11V9a1 1 0 0 1 2 0v2"/>
+                        </svg>
+                    </button>
+
+                    <input
+                        id="pinyin-ratio-slider"
+                        type="range"
+                        min={0}
+                        max={100}
+                        step={10}
+                        value={pinyinHideRatio}
+                        disabled={showPinyin}
+                        onChange={(e) => setPinyinHideRatio(Number(e.target.value))}
+                        aria-label={`Hide ${pinyinHideRatio}% of pinyin`}
+                        title={`Hide ${pinyinHideRatio}% of pinyin`}
+                        className="typing-practice__ratio-slider"
+                        style={{"--ratio": pinyinHideRatio} as React.CSSProperties}
+                    />
+                </div>
             </div>
             <div className="typing-practice__divider"/>
 
@@ -223,7 +260,7 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
                         currentWordIndex={currentWordIndex}
                         currentInput={currentInput}
                         completedWords={completedWords}
-                        showPinyin={showPinyin}
+                        hiddenPinyinIndices={hiddenPinyinIndices}
                     />
                 </div>
 
