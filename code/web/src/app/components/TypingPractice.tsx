@@ -1,6 +1,6 @@
 "use client";
 
-import {useCallback, useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {Passage, WordResult} from "../types";
 import TextDisplay from "./TextDisplay";
 
@@ -14,9 +14,34 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
     const [completedWords, setCompletedWords] = useState<WordResult[]>([]);
     const [isFocused, setIsFocused] = useState(true);
     const [showPinyin, setShowPinyin] = useState(true);
+    const [isShuffled, setIsShuffled] = useState(false);
+    // Bumped each time shuffle is toggled on, to get a fresh random order
+    const [shuffleSeed, setShuffleSeed] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const isComplete = currentWordIndex >= passage.length;
+    // Derived passage: original order or a stable shuffle
+    const activePassage = useMemo(() => {
+        if (!isShuffled) return passage;
+        // Fisher-Yates on a shallow copy; shuffleSeed is in the dep array
+        // so a new seed means a new shuffle
+        void shuffleSeed; // explicit dep
+        const arr = [...passage];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }, [passage, isShuffled, shuffleSeed]);
+
+    // Reset progress whenever the active passage changes
+    useEffect(() => {
+        setCurrentWordIndex(0);
+        setCurrentInput("");
+        setCompletedWords([]);
+        if (inputRef.current) inputRef.current.value = "";
+    }, [activePassage]);
+
+    const isComplete = currentWordIndex >= activePassage.length;
 
     // Handle window blur/focus for tab switching
     useEffect(() => {
@@ -71,7 +96,7 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
             // Check if space was typed (submit word)
             if (value.endsWith(" ")) {
                 const trimmed = value.trimEnd();
-                const currentWord = passage[currentWordIndex];
+                const currentWord = activePassage[currentWordIndex];
                 const expected = currentWord.segments
                     .map((s) => s.pinyin)
                     .join("");
@@ -100,7 +125,7 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
                 inputRef.current.value = filtered;
             }
         },
-        [isComplete, passage, currentWordIndex]
+        [isComplete, activePassage, currentWordIndex]
     );
 
     // Handle keydown for special keys
@@ -110,7 +135,7 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
 
             if (e.key === " ") {
                 e.preventDefault();
-                const currentWord = passage[currentWordIndex];
+                const currentWord = activePassage[currentWordIndex];
                 const expected = currentWord.segments
                     .map((s) => s.pinyin)
                     .join("");
@@ -128,7 +153,7 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
                 }
             }
         },
-        [isComplete, passage, currentWordIndex, currentInput]
+        [isComplete, activePassage, currentWordIndex, currentInput]
     );
 
     return (
@@ -142,6 +167,32 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
 
             {/* Actions toolbar */}
             <div className="typing-practice__actions">
+                {/* Shuffle toggle */}
+                <button
+                    id="toggle-shuffle-btn"
+                    className={`typing-practice__action-btn${isShuffled ? " typing-practice__action-btn--active" : ""}`}
+                    onClick={() => {
+                        setIsShuffled((prev) => {
+                            if (!prev) setShuffleSeed((s) => s + 1); // new shuffle each activation
+                            return !prev;
+                        });
+                    }}
+                    aria-label={isShuffled ? "Disable shuffle" : "Shuffle words"}
+                    title={isShuffled ? "Disable shuffle" : "Shuffle words"}
+                    type="button"
+                >
+                    {/* Shuffle icon */}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none"
+                         stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                         aria-hidden="true">
+                        <polyline points="16 3 21 3 21 8"/>
+                        <line x1="4" y1="20" x2="21" y2="3"/>
+                        <polyline points="21 16 21 21 16 21"/>
+                        <line x1="15" y1="15" x2="21" y2="21"/>
+                    </svg>
+                </button>
+
+                {/* Pinyin visibility toggle */}
                 <button
                     id="toggle-pinyin-btn"
                     className={`typing-practice__action-btn${showPinyin ? " typing-practice__action-btn--active" : ""}`}
@@ -168,7 +219,7 @@ export default function TypingPractice({passage}: TypingPracticeProps) {
                 <div
                     className={`typing-practice__text-wrapper ${!isFocused && !isComplete ? "typing-practice__text-wrapper--blurred" : ""}`}>
                     <TextDisplay
-                        passage={passage}
+                        passage={activePassage}
                         currentWordIndex={currentWordIndex}
                         currentInput={currentInput}
                         completedWords={completedWords}
